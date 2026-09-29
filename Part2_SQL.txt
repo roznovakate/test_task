@@ -1,0 +1,93 @@
+Исходные данные (2 таблицы в SQLite базе данных внутри архива с заданиями):
+1. orders (Заказы) – информация о заказах.  -- total_rows = 49
+2. customers (Клиенты) – данные покупателей. -- total_rows = 20
+
+Задание
+1. Найти общую выручку за 1 квартал 2024 года:
+(рассчитаем без учета значения статуса заказа,
+если брать только статус 'completed' результат: 4387.98)
+
+SELECT SUM(total_amount) AS revenue_q1_2024
+FROM orders
+WHERE order_date >= '2024-01-01'
+  AND order_date < '2024-04-01';
+
+Ответ: 4708.48
+
+2. Определить топ-5 стран по количеству заказов:
+
+SELECT c.country,
+       COUNT(*) AS orders_count
+FROM orders o
+JOIN customers c USING(customer_id)
+GROUP BY c.country
+ORDER BY orders_count DESC
+LIMIT 5;
+
+Ответ: 
+USA	11
+Germany	10
+France	8
+UK	7
+Canada	5
+
+3. Посчитать средний чек для завершенных заказов:
+
+SELECT ROUND(AVG(total_amount),2) AS avg_check
+FROM orders
+WHERE status = 'completed';
+
+Ответ:144.53
+
+4. Найти количество новых покупателей, зарегистрированных в позапрошлом году:
+
+SELECT COUNT(*) AS new_customers
+FROM customers
+WHERE registration_date >= date('now', 'start of year', '-2 years')
+  AND registration_date <  date('now', 'start of year', '-1 years');
+
+Ответ: 5
+
+вариант решения с strftime короче по записи, но медленнее:
+- strftime применяется к каждой строке,
+- сравнение дат быстрее, чем сравнение строк,
+- индекс, если он есть, по registration_date не используется и SQLite перебирает всю таблицу
+
+5. Найти сумму выручки за каждую неделю 2 квартала 2024 года:
+
+SELECT strftime('%Y-%W', order_date) AS week,
+       SUM(total_amount) AS revenue
+FROM orders
+WHERE order_date >= '2024-04-01'
+  AND order_date < '2024-07-01'
+GROUP BY week
+ORDER BY week;
+
+Ответ:
+2024-14	485.5
+2024-15	280.0
+2024-16	285.0
+2024-17	190.0
+2024-18	355.0
+2024-19	55.0
+2024-20	175.0
+2024-21	305.0
+2024-22	130.0
+
+6. Определить процент покупателей, совершивших повторный заказ:
+(процент покупателей совершивших повторный заказ вероятно
+от всех покупателей таблицы customers и заказ в статусе completed)
+
+WITH repeat_customers AS (
+    SELECT customer_id
+    FROM orders
+    WHERE status = 'completed'
+    GROUP BY customer_id
+    HAVING COUNT(*) > 1
+)
+SELECT ROUND(
+           100.0 * (SELECT COUNT(*) FROM repeat_customers)
+                 / (SELECT COUNT(*) FROM customers),
+           2) AS repeat_rate_percent;
+
+Ответ: 90
