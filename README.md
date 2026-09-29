@@ -4,9 +4,9 @@
 .
 ├── README.md                          # этот файл
 ├── Тестовое задание.docx              # оригинал задания
-├── Part1_Excel.xlsx                   # Excel-часть: витрина, сводные таблицы, графики
-├── Part2_SQL.txt                      # SQL-часть: 6 запросов с ответами
-├── Part3_PyPandas.ipynb               # Python-часть: анализ в pandas
+├── Part1_Excel.xlsx                   # Excel-часть
+├── Part2_SQL.txt                      # SQL-часть
+├── Part3_PyPandas.ipynb               # Python-часть
 ├── python/                            # исходные данные для Python-части
 │   ├── orders.csv                     # заказы
 │   └── product_info.csv               # справочник товаров
